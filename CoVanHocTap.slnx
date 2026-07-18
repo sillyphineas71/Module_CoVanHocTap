@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ApiCoVanHocTap/ApiCoVanHocTap.csproj" />
+  <Project Path="Models/Models.csproj" />
+</Solution>
