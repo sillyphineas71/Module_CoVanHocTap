@@ -11,6 +11,9 @@
 // Vì sao dùng cách này: Controller/Service chỉ phụ thuộc vào 1 wrapper, thêm
 // service mới không phải sửa constructor ở nhiều nơi. (Đây là quy ước team.)
 // =============================================================================
+using ApiCoVanHocTap.Repositories.PhanCongCoVan;
+using ApiCoVanHocTap.Services.PhanCongCoVan;
+
 namespace ApiCoVanHocTap.Services
 {
     /// <summary>
@@ -20,6 +23,7 @@ namespace ApiCoVanHocTap.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private IPhanCongCoVanService _phanCongCoVan;
 
         // =========================================================================
         // Backing fields – khởi tạo lazy khi property được truy cập lần đầu
@@ -43,5 +47,7 @@ namespace ApiCoVanHocTap.Services
         // public IHoiThoaiService HoiThoai =>
         //     _hoiThoaiService ??= new HoiThoaiService(_serviceProvider);
         // =========================================================================
+        public IPhanCongCoVanService PhanCongCoVan =>
+                _phanCongCoVan ??= new PhanCongCoVanService(_serviceProvider);
     }
 }

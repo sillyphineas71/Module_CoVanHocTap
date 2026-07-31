@@ -5,6 +5,10 @@
 // tầng Repository. Do DI tạo (Scoped ở Program.cs); các Repository bên trong tạo
 // thủ công bằng `new` khi được gọi lần đầu.
 // =============================================================================
+using System.Data;
+using ApiCoVanHocTap.Repositories.Base;
+using ApiCoVanHocTap.Repositories.PhanCongCoVan;
+
 namespace ApiCoVanHocTap.Repositories
 {
     /// <summary>
@@ -13,6 +17,8 @@ namespace ApiCoVanHocTap.Repositories
     public class RepositoryWrapper : IRepositoryWrapper
     {
         private readonly IServiceProvider _serviceProvider;
+        private IPhanCongCoVanRepository? _phanCongCoVan;
+
 
         // =========================================================================
         // Backing fields – khởi tạo lazy khi property được truy cập lần đầu
@@ -30,5 +36,8 @@ namespace ApiCoVanHocTap.Repositories
         // public IHoiThoaiRepository HoiThoai =>
         //     _hoiThoaiRepository ??= new HoiThoaiRepository(_serviceProvider);
         // =========================================================================
+        public IPhanCongCoVanRepository PhanCongCoVan =>
+        _phanCongCoVan ??= new PhanCongCoVanRepository(
+            _serviceProvider.GetRequiredService<IDbConnectionQuerry>());
     }
 }

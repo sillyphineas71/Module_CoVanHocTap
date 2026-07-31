@@ -8,6 +8,8 @@
 // Khi thêm 1 repository mới: khai báo property ở ĐÂY và cài đặt lazy bên
 // RepositoryWrapper.cs.
 // =============================================================================
+using ApiCoVanHocTap.Repositories.PhanCongCoVan;
+
 namespace ApiCoVanHocTap.Repositories
 {
     /// <summary>
@@ -23,5 +25,6 @@ namespace ApiCoVanHocTap.Repositories
         // IPhanCongCoVanRepository PhanCongCoVan { get; }
         // IThongBaoRepository ThongBao { get; }
         // =========================================================================
+        IPhanCongCoVanRepository PhanCongCoVan { get; }
     }
 }

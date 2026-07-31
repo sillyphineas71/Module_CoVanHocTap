@@ -8,6 +8,8 @@
 // Khi thêm 1 service mới: khai báo property ở ĐÂY (interface) và cài đặt phần
 // khởi tạo lazy bên ServiceWrapper.cs.
 // =============================================================================
+using ApiCoVanHocTap.Services.PhanCongCoVan;
+
 namespace ApiCoVanHocTap.Services
 {
     /// <summary>
@@ -26,5 +28,6 @@ namespace ApiCoVanHocTap.Services
         // IPhanCongCoVanService PhanCongCoVan { get; }
         // IThongBaoService ThongBao { get; }
         // =========================================================================
+        IPhanCongCoVanService PhanCongCoVan { get; }
     }
 }
