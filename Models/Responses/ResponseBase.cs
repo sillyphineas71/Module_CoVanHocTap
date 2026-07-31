@@ -1,74 +1,115 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Models
 {
-    /// <summary>
-    /// Response wrapper chuẩn cho toàn bộ API.
-    /// Dùng System.Text.Json thay cho Newtonsoft để không phụ thuộc package ngoài trong Models.
-    /// </summary>
     [Serializable]
     public class ResponseBase<T>
     {
-        public bool   is_success { get; set; } = true;
-        public string code       { get; set; } = ResponseCode.SUCCESS;
-        public string message    { get; set; } = ResponseDetail.SUCCESSDETAIL;
-        public T?     data       { get; set; }
-
-        private static readonly JsonSerializerOptions _auditExcludeOptions = new()
-        {
-            PropertyNamingPolicy = null,
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-            // Lọc thủ công các trường audit ở tầng Controller nếu cần
-        };
-
-        private static readonly JsonSerializerOptions _defaultOptions = new()
-        {
-            PropertyNamingPolicy = null,
-        };
-
+        public bool is_success { get; set; } = true;
+        public string code { get; set; } = ResponseCode.SUCCESS;
+        public string message { get; set; } = ResponseDetail.SUCCESSDETAIL;
+        public T? data { get; set; }
         public ResponseBase() { }
-
-        public ResponseBase(T data)
+        public ResponseBase(T data = default(T))
         {
             this.data = data;
         }
-
-        /// <summary>Serialize thành JSON string, lọc bỏ các trường audit (is_deleted, created_*, …).</summary>
-        public string ToJson(bool excludeAuditFields = true)
+        public ActionResult ToActionResult()
         {
-            if (excludeAuditFields)
-                return JsonSerializer.Serialize(this, _auditExcludeOptions);
-            return JsonSerializer.Serialize(this, _defaultOptions);
+            if (this.code == ResponseCode.SUCCESS)
+                return new OkObjectResult(this);
+            return new BadRequestObjectResult(this);
+            //return response.code switch
+            //{
+            //    ResponseCode.NOT_FOUND => new NotFoundObjectResult(response),
+            //    ResponseCode.BAD_REQUEST => new BadRequestObjectResult(response),
+            //    ResponseCode.UNAUTHORIZED => new UnauthorizedObjectResult(response),
+            //    _ => new StatusCodeResult(500)
+            //};
+        }
+        public ContentResult ToContentResult()
+        {
+            var jsonSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new IgnorePropsResolver(new[] { "is_deleted", "created_time", "created_user_id", "last_modified_times", "last_modified_user_id" }),
+                Formatting = Formatting.None
+            };
+            return new ContentResult()
+            {
+                StatusCode = (int)(this.code == ResponseCode.SUCCESS ? HttpStatusCode.OK : HttpStatusCode.BadRequest),
+                Content = Newtonsoft.Json.JsonConvert.SerializeObject(this, jsonSettings),
+                ContentType = "json"
+            };
+        }
+
+        public ContentResult ToFullInfoResult()
+        {
+            var jsonSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new IgnorePropsResolver(new[] { "" }),
+                Formatting = Formatting.None
+            };
+            return new ContentResult()
+            {
+                StatusCode = (int)(this.code == ResponseCode.SUCCESS ? HttpStatusCode.OK : HttpStatusCode.BadRequest),
+                Content = Newtonsoft.Json.JsonConvert.SerializeObject(this, jsonSettings),
+                ContentType = "json"
+            };
         }
     }
-
     public class ResponeBaseSuccess : ResponseBase<object>
     {
+
         public ResponeBaseSuccess(object data, string message = "")
         {
-            is_success  = true;
-            code        = ResponseCode.SUCCESS;
-            this.message = string.IsNullOrEmpty(message) ? ResponseDetail.SUCCESSDETAIL : message;
-            this.data   = data;
+            this.is_success = true;
+            this.code = ResponseCode.SUCCESS;
+            this.message = ResponseDetail.SUCCESSDETAIL;
+            this.data = data;
         }
-
         public ResponeBaseSuccess(string message = "")
         {
-            is_success   = true;
-            code         = ResponseCode.SUCCESS;
+            this.is_success = true;
+            this.code = ResponseCode.SUCCESS;
             this.message = message;
-            data         = null;
+            this.data = null;
         }
     }
-
     public class ResponeBaseErr : ResponseBase<object>
     {
         public ResponeBaseErr(string message = "")
         {
-            is_success   = false;
-            code         = ResponseCode.SYSTEM_ERROR;
+            this.is_success = false;
+            this.code = ResponseCode.SYSTEM_ERROR;
             this.message = message;
+        }
+    }
+
+    public class IgnorePropsResolver : DefaultContractResolver
+    {
+        private readonly HashSet<string> _propsToIgnore;
+
+        public IgnorePropsResolver(IEnumerable<string> propsToIgnore)
+        {
+            _propsToIgnore = new HashSet<string>(propsToIgnore, StringComparer.OrdinalIgnoreCase);
+        }
+
+        protected override JsonProperty CreateProperty(System.Reflection.MemberInfo member, MemberSerialization memberSerialization)
+        {
+            var property = base.CreateProperty(member, memberSerialization);
+            if (_propsToIgnore.Contains(property.PropertyName))
+            {
+                property.ShouldSerialize = _ => false;
+            }
+            return property;
         }
     }
 }

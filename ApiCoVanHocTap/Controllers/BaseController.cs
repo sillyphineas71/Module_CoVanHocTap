@@ -22,9 +22,12 @@ namespace ApiCoVanHocTap.Controllers
         /// Truy cập Service Wrapper thông qua Service Locator.
         /// Mọi Controller con gọi nghiệp vụ qua đây: ServiceWrapper.HoiThoai...
         /// </summary>
-        protected IServiceWrapper ServiceWrapper =>
-            HttpContext.RequestServices
-                       .GetRequiredService<IServiceWrapper>();
+        protected readonly IServiceWrapper _serviceWrapper;
+
+        public BaseController(IServiceWrapper serviceWrapper)
+        {
+            this._serviceWrapper = serviceWrapper;
+        }
 
         // ====================================================================
         // Response Helpers – chuẩn hoá format trả về

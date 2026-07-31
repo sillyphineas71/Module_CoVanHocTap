@@ -97,20 +97,17 @@ builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 // --- Core services ---
 // JwtTokenService không giữ state (chỉ đọc claim từ HttpContext truyền vào)
 // → Singleton là an toàn và cho phép exception handler lấy được từ lúc khởi động.
-builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
-builder.Services.AddScoped<ICoreServiceWrapper, CoreServiceWrapper>();
+ConfigurationHelper.RepositorysConfig(builder.Services);
 
 // --- Hybrid DI: Repository + Service Wrapper ---
 // Scoped: mỗi HTTP request nhận 1 instance riêng → hợp với Lazy Loading + HttpContext lifecycle.
-builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
-builder.Services.AddScoped<IServiceWrapper, ServiceWrapper>();
+ConfigurationHelper.ServicesConfig(builder.Services);
 
 // --- Forwarded Headers (khi deploy sau reverse proxy Nginx/Apache/IIS) ---
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     // Xoá whitelist để trust tất cả proxy nội bộ
-    options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
 
