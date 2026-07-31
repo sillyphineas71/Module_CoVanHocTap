@@ -68,6 +68,7 @@ Properties/PublishProfiles/
 # App secrets (KHÔNG COMMIT secret)
 appsettings.Production.json
 appsettings.Staging.json
+appsettings.json
 secrets.json
 
 # ── Node / SPA (nếu có ClientApp) ────────────────────────────────────────────
